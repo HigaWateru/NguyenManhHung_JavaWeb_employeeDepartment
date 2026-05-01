@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Title</title>
+    <title>Thêm nhân viên</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -11,12 +11,47 @@
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-<form action="/uploads" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button type="submit" value="Upload">Tải lên</button>
-</form>
-
-<img th:src="@{${url}}" th:if="${url != null}" alt="Image" width="200" height="200">
+<div class="container mt-5">
+    <h2 class="mb-4">Thêm mới nhân viên</h2>
+    <form th:action="@{/employees/add}" th:object="${employeeDto}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">Tên</label>
+            <input type="text" th:field="*{name}" id="name" class="form-control" placeholder="Nhập tên">
+            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <label for="age">Tuổi</label>
+            <input type="number" th:field="*{age}" id="age" class="form-control" placeholder="Nhập tuổi">
+            <p th:if="${#fields.hasErrors('age')}" th:errors="*{age}" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <label for="departmentId">Phòng ban</label>
+            <select th:field="*{departmentId}" id="departmentId" class="form-control">
+                <option value="">-- Chọn phòng ban --</option>
+                <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
+            </select>
+            <p th:if="${#fields.hasErrors('departmentId')}" th:errors="*{departmentId}" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <label>Trạng thái</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" th:field="*{status}" id="statusActive" th:value="true">
+                <label class="form-check-label" for="statusActive">Đang làm việc</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" th:field="*{status}" id="statusInactive" th:value="false">
+                <label class="form-check-label" for="statusInactive">Nghỉ việc</label>
+            </div>
+            <p th:if="${#fields.hasErrors('status')}" th:errors="*{status}" class="text-danger"></p>
+        </div>
+        <div class="form-group">
+            <label for="file">Ảnh đại diện</label>
+            <input type="file" name="file" id="file" class="form-control-file">
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a href="/employees" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>
 
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
