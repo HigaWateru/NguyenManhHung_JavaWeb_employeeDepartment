@@ -43,29 +43,17 @@ public class EmployeeController {
     }
 
     @PostMapping("/add")
-    public String addEmployee(@Valid @ModelAttribute("employeeDto") EmployeeDto employeeDto,
-                              BindingResult result,
-                              @RequestParam("file") MultipartFile file,
-                              Model model) {
-        if (result.hasErrors()) {
-            return "form";
-        }
+    public String addEmployee(@Valid @ModelAttribute("employeeDto") EmployeeDto employeeDto, BindingResult result, @RequestParam("file") MultipartFile file, Model model) {
+        if (result.hasErrors()) return "form";
 
         String avatarUrl = "https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg"; // Default
         if (file != null && !file.isEmpty()) {
             avatarUrl = uploadService.upload(file);
         }
 
-        Department department = departmentRepository.findById(employeeDto.getDepartmentId())
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+        Department department = departmentRepository.findById(employeeDto.getDepartmentId()).orElseThrow(() -> new RuntimeException("Department not found"));
 
-        Employee employee = Employee.builder()
-                .name(employeeDto.getName())
-                .age(employeeDto.getAge())
-                .status(employeeDto.getStatus())
-                .avatar(avatarUrl)
-                .department(department)
-                .build();
+        Employee employee = Employee.builder().name(employeeDto.getName()).age(employeeDto.getAge()).status(employeeDto.getStatus()).avatar(avatarUrl).department(department).build();
 
         employeeRepository.save(employee);
         return "redirect:/employees";

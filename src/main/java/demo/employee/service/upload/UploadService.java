@@ -17,14 +17,9 @@ public class UploadService {
         try {
             String fileName = file.getOriginalFilename();
 
-            if(fileName != null && fileName.contains(".")) {
-                fileName = fileName.substring(0, fileName.lastIndexOf("."));
-            }
+            if(fileName != null && fileName.contains(".")) fileName = fileName.substring(0, fileName.lastIndexOf("."));
 
-            Map uploadParams = ObjectUtils.asMap(
-                    "public_id", fileName,
-                    "resource_type", "auto"
-            );
+            Map uploadParams = ObjectUtils.asMap("public_id", fileName, "resource_type", "auto");
 
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
 
