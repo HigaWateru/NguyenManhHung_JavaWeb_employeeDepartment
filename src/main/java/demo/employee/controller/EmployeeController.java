@@ -8,6 +8,10 @@ import demo.employee.repository.EmployeeRepository;
 import demo.employee.service.upload.UploadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,8 +35,28 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public String listEmployees(Model model) {
-        model.addAttribute("employees", employeeRepository.findAll());
+    public String listEmployees(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, @RequestParam(defaultValue = "id") String sort, @RequestParam(defaultValue = "asc") String direction, @RequestParam(defaultValue = "") String keyword, Model model) {
+
+        if (page < 0) page = 0;
+
+        Sort sortOrder = direction.equalsIgnoreCase("asc") ? Sort.by(sort).ascending() : Sort.by(sort).descending();
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        Page<Employee> employeePage;
+        if (keyword == null || keyword.isEmpty()) employeePage = employeeRepository.findAll(pageable);
+        else employeePage = employeeRepository.findByNameContainingIgnoreCase(keyword, pageable);
+
+        if (page >= employeePage.getTotalPages() && employeePage.getTotalPages() > 0) return "redirect:/employees?page=" + (employeePage.getTotalPages() - 1) + "&size=" + size + "&sort=" + sort + "&direction=" + direction + "&keyword=" + keyword;
+
+        model.addAttribute("employees", employeePage.getContent());
+        model.addAttribute("employeePage", employeePage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", employeePage.getTotalPages());
+        model.addAttribute("totalItems", employeePage.getTotalElements());
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
+        model.addAttribute("keyword", keyword);
+
         return "list";
     }
 
@@ -47,9 +71,7 @@ public class EmployeeController {
         if (result.hasErrors()) return "form";
 
         String avatarUrl = "https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg"; // Default
-        if (file != null && !file.isEmpty()) {
-            avatarUrl = uploadService.upload(file);
-        }
+        if (file != null && !file.isEmpty()) avatarUrl = uploadService.upload(file);
 
         Department department = departmentRepository.findById(employeeDto.getDepartmentId()).orElseThrow(() -> new RuntimeException("Department not found"));
 
